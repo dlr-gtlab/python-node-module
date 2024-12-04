@@ -1,0 +1,16 @@
+Makefile*
+
+build/
+debug/
+release/
+.qtc_clangd/
+
+*.autosave
+*.directory
+*.qmake.stash
+*.o
+*.pyc
+*CMakeLists.txt.user
+
+moc_*.cpp
+moc_*.h

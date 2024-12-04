@@ -1,0 +1,194 @@
+#################################################################
+############### GTlab Standard Pipeline Version 2.1.0 ###########
+#################################################################
+
+# Variables that are defined globally for the pipeline
+variables:
+  PIPELINEVERSION: "2.1.0"
+  GIT_SUBMODULE_STRATEGY: none
+  
+  # Regulare expression pattern
+  # enclose the branch name with ^ and $
+  # separete severl branch names with |
+  # e.g. /^main$|^main_1_0$/
+  STABLE_BRANCHES: /^main$/
+  
+include:
+  - project: 'gtlab/public/development-tools/gitlab-templates'
+    file: '/ci-templates/.ci-templates-cmake-1.0.yml'
+
+stages:
+  - update
+  - build
+  - test
+  - regressionTest
+  - build_2.0
+  - test_2.0
+  - regressionTest_2.0
+  - deploy
+  - codequality
+  - package
+  - badges
+
+# build on Windows system
+windowsBuildDebug_2.0:
+  stage: build_2.0
+  extends: 
+    - .build-win_20
+  script:
+    - $env:path = "$env:PYTHON3_HOME;$env:path"
+    - $env:PATH+=(";.\build;.\build\modules;"+$env:GTLAB_DEV_TOOLS+"\binDebug;"+$env:GTLAB_DEV_TOOLS+"\binDebug\modules;")
+    - cmake -B build -S . -G "Ninja" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=install-msvc2019-dbg -DGTLAB_DEVTOOLS_DIR="$env:GTLAB_DEV_TOOLS" -DBUILD_UNITTESTS=ON
+    - cmake --build build --target install
+
+windowsBuildRelease_2.0:
+  stage: build_2.0
+  extends: 
+    - .build-win_20
+    - .run-master-and-tags
+  script:
+    - cmake -B build -S . -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install-msvc2019 -DGTLAB_DEVTOOLS_DIR="$env:GTLAB_DEV_TOOLS"
+    - cmake --build build --target install
+    
+# build on Linux system
+linuxBuildDebug_2.0:
+  stage: build_2.0
+  extends: 
+    - .build-linux_20
+  script:
+    - export LD_LIBRARY_PATH="$GTLAB_DEV_TOOLS/bin:$LD_LIBRARY_PATH"
+    - export LD_LIBRARY_PATH="$GTLAB_DEV_TOOLS/bin/modules:$LD_LIBRARY_PATH"
+    - cmake -B build -S . -G "Ninja" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=install-linux-dbg -DGTLAB_DEVTOOLS_DIR=$GTLAB_DEV_TOOLS  -DBUILD_UNITTESTS=ON
+    - cmake --build build --target install
+ 
+linuxBuildRelease_2.0:
+  stage: build_2.0
+  extends: 
+    - .build-linux_20
+    - .run-master-and-tags
+  script:
+    - cmake -B build -S . -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install-linux -DGTLAB_DEVTOOLS_DIR=$GTLAB_DEV_TOOLS 
+    - cmake --build build --target install
+
+# run tests using the binary built before
+testWin_2.0:
+  stage: test_2.0
+  tags: ["Win10"]
+  needs: 
+    - windowsBuildDebug_2.0
+  dependencies: 
+    - windowsBuildDebug_2.0
+  script:
+    - $env:path = "$env:DEVTOOLS\binDebug;$env:DEVTOOLS\binDebug\modules;$env:path"
+    - cd build
+    - .\GTlabPythonNodeUnitTests.exe --gtest_output=xml:unittests.xml
+  artifacts:
+    paths:
+      - "build/unittests.xml"
+    expire_in: 1 week
+    reports:
+      junit: build/unittests.xml
+  variables:
+    DEVTOOLS: $DEVTOOLS_Win_Unstable  
+  
+testLinux_2.0:
+  stage: test_2.0
+  tags: ["linux", "docker"]
+  image: at-twk-hal9000.intra.dlr.de:5000/dlr-at/gtlabdev-2_0-buster
+  needs: ["linuxBuildDebug_2.0"]
+  before_script:
+    # update to latest dev tools
+    - '"$GTLAB_UPDATE_TOOL" up --confirm-command'
+    - apt install -y libglu1-mesa
+  script:
+    - cd build
+    - LD_LIBRARY_PATH="$GTLAB_DEV_TOOLS/binDebug;$GTLAB_DEV_TOOLS/binDebug/modules" ./GTlabPythonNodeUnitTests --gtest_output=xml:unittests.xml
+  variables:
+    GIT_SUBMODULE_STRATEGY: "none"
+  artifacts:
+    paths:
+      - "build/unittests.xml"
+    expire_in: 1 week
+    reports:
+      junit: build/unittests.xml  
+
+
+.code-coverage:
+  stage: codequality
+  tags: ["linux", "docker"]
+  image: at-twk-hal9000.intra.dlr.de:5000/dlr-at/gtlabdev-2_0-buster
+  extends: 
+    - .build-linux_20
+  script:
+    - apt install -y libglu1-mesa
+    - cmake -B build -S . -G "Ninja" -DCMAKE_BUILD_TYPE=Debug -DGTLAB_DEVTOOLS_DIR=$GTLAB_DEV_TOOLS -DBUILD_UNITTESTS=ON -DBUILD_WITH_COVERAGE=ON
+    - cd build
+    - LD_LIBRARY_PATH="$GTLAB_DEV_TOOLS/binDebug;$GTLAB_DEV_TOOLS/binDebug/modules" ninja test-coverage
+    - mv test-coverage ..
+  coverage: '/^\s{2}lines\.+:\s+(\d+.\d+\%)/'
+  variables:
+    GIT_SUBMODULE_STRATEGY: "none"
+  artifacts:
+    expose_as: 'TestCoverage'
+    name: "TestCoverage-$CI_COMMIT_REF_NAME"
+    paths:
+      - "test-coverage"
+
+# code quality
+cppcheck:
+  stage: codequality
+  extends: .cppCheckTemplate
+  allow_failure: true
+
+check-license:
+   stage: codequality
+   tags: ["docker", "linux"]
+   needs: []
+   image: at-twk-hal9000.intra.dlr.de:5000/dlr-at/buster-dev
+   before_script:
+    - python3 -m pip install reuse
+   script:
+    - reuse lint
+   variables:
+     GIT_SUBMODULE_STRATEGY: "none"
+
+.package:
+  stage: package
+  tags: ["docker", "linux"]
+  extends: [".run-master-and-tags"]
+  image: debian:buster
+  script:
+    - cp -r install-$toolchain-dbg/* install-$toolchain
+    - mv install-$toolchain gtlabpythonnodes-$toolchain
+    - tar czf gtlabpythonnodes-$toolchain.tar.gz gtlabpythonnodes-$toolchain
+  artifacts:
+    name: "gtlabpythonnodes-$toolchain"
+    paths: ["gtlabpythonnodes-$toolchain.tar.gz"]
+  variables:
+    toolchain: msvc2019
+    GIT_STRATEGY: "none"
+
+package-win_2.0:
+  extends: [".package"]
+  needs: ["windowsBuildDebug_2.0", "windowsBuildRelease_2.0"]
+  variables:
+    toolchain: msvc2019
+
+package-linux_2.0:
+  extends: [".package"]
+  needs: ["linuxBuildDebug_2.0", "linuxBuildRelease_2.0"]
+  variables:
+    toolchain: linux
+
+# badges
+badges_2.0:
+  stage: badges
+  extends: 
+    - .unstable-only-master
+    - .badgeTemplate
+  dependencies:
+    - windowsBuildDebug_2.0
+    - linuxBuildDebug_2.0
+    - testWin_2.0
+    - testLinux_2.0
+    - codingstyle

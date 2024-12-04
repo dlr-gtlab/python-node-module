@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+		{ "name" : "Python Module (Python 3.9)", "version" : "1.4.2" },
+		{ "name" : "IntelliGraph", "version" : "0.10.3" },
+		{ "name" : "Basic Tools", "version" : "2.2.4" }
+    ]
+}
