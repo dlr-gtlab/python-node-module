@@ -1,7 +1,13 @@
 # GtPythonGraph Module
 
  Module to combine the abilities of python and the intelli graph system.
+ The nodes can be used flexibly to script processes in individual process steps. 
+ Data forwarding is possible for a large number of data classes in the system. 
+ A matplotlib interface is also integrated, which makes it possible to display plots based on the scripts directly within the graph in the node.
+ This is illustrated in the shown example:
   
+  ![Example workflow using python nodes](images/Example.png)
+    
  ## License
 
 The largest portion of the code is licensed under the `Apache 2.0 License`.
