@@ -1,0 +1,10 @@
+<!-- this is my comment in qrc file 
+# SPDX-FileCopyrightText: 2017 University of Cincinnati
+#
+# SPDX-License-Identifier: BSD-3-Clause
+-->
+<RCC>
+    <qresource prefix="/pyNodes">
+        <file>figure_empty.svg</file>
+    </qresource>
+</RCC>

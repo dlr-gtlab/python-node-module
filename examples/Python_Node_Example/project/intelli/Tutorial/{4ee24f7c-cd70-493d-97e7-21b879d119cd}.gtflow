@@ -1,0 +1,119 @@
+<object class="intelli::Graph" uuid="{4ee24f7c-cd70-493d-97e7-21b879d119cd}" name="Plotting">
+ <property type="uint" name="id">4294967295</property>
+ <property type="double" name="posX">0</property>
+ <property type="double" name="posY">0</property>
+ <property type="int" name="sizeWidth">-1</property>
+ <property type="int" name="sizeHeight">-1</property>
+ <property type="bool" name="isActive">true</property>
+ <objectlist>
+  <object class="intelli::ConnectionGroup" uuid="{3696a44c-f44e-4d46-9060-db5e03d30613}" name="__connections">
+   <objectlist>
+    <object class="intelli::Connection" uuid="{7c590b0e-0807-49b0-908f-dc867fa2c3ce}" name="NodeConnection[0:0/1:0]">
+     <property type="uint" name="inNodeId">1</property>
+     <property type="uint" name="inPort">0</property>
+     <property type="uint" name="outNodeId">0</property>
+     <property type="uint" name="outPort">0</property>
+    </object>
+    <object class="intelli::Connection" uuid="{22625159-537e-4608-a34f-5941c8d917c9}" name="NodeConnection[1:2/2:0]">
+     <property type="uint" name="inNodeId">2</property>
+     <property type="uint" name="inPort">0</property>
+     <property type="uint" name="outNodeId">1</property>
+     <property type="uint" name="outPort">2</property>
+    </object>
+   </objectlist>
+  </object>
+  <object class="intelli::IntInputNode" uuid="{cd3498df-42f5-4a75-a2d5-3efe023bbbf1}" name="Number of points">
+   <property type="uint" name="id">0</property>
+   <property type="double" name="posX">-350</property>
+   <property type="double" name="posY">-23</property>
+   <property type="int" name="sizeWidth">-1</property>
+   <property type="int" name="sizeHeight">-1</property>
+   <property type="bool" name="isActive">true</property>
+   <property type="int" name="value">100</property>
+   <property type="bool" name="isArg">false</property>
+   <property type="int" name="min">-10</property>
+   <property type="int" name="max">10</property>
+   <property type="QString" name="type">Text</property>
+  </object>
+  <object class="GtpyPythonNode" uuid="{aa3e2504-fbce-4ba5-a48a-d00f35d8fa6e}" name="Generate Sample">
+   <property type="uint" name="id">1</property>
+   <property type="double" name="posX">-28</property>
+   <property type="double" name="posY">-22</property>
+   <property type="int" name="sizeWidth">-1</property>
+   <property type="int" name="sizeHeight">-1</property>
+   <property type="bool" name="isActive">true</property>
+   <property type="QString" name="script">
+################################################################################
+# ...
+################################################################################
+import numpy as np
+
+# Number of points
+num_points = numberOfPoints.value()
+
+# Random 2D-coordinates 
+sample = np.random.rand(num_points, 2)</property>
+   <property type="bool" name="plot">false</property>
+   <property-container name="dynamicInPorts">
+    <property type="PortInfoIn" name="{759ac9d7-efe9-4fde-a236-f265bcd0fcda}">
+     <property type="QString" name="TypeId">intelli::IntData</property>
+     <property type="QString" name="Caption">numberOfPoints</property>
+     <property type="bool" name="CaptionVisible">true</property>
+     <property type="bool" name="Optional">true</property>
+     <property type="uint" name="PortId">0</property>
+    </property>
+   </property-container>
+   <property-container name="dynamicOutPorts">
+    <property type="PortInfoOut" name="{7feeb30e-bc27-4f84-b011-6bcfadd6078d}">
+     <property type="QString" name="TypeId">intelli::ByteArrayData</property>
+     <property type="QString" name="Caption">sample</property>
+     <property type="bool" name="CaptionVisible">true</property>
+     <property type="bool" name="Optional">true</property>
+     <property type="uint" name="PortId">2</property>
+    </property>
+   </property-container>
+  </object>
+  <object class="GtpyPythonNode" uuid="{be994191-1675-46d5-be03-06f8ec5585fb}" name="Plot Sample">
+   <property type="uint" name="id">2</property>
+   <property type="double" name="posX">199</property>
+   <property type="double" name="posY">-23</property>
+   <property type="int" name="sizeWidth">298</property>
+   <property type="int" name="sizeHeight">288</property>
+   <property type="bool" name="isActive">true</property>
+   <property type="QString" name="script">
+################################################################################
+# ...
+################################################################################
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Punkte plotten
+plt.scatter(points[:, 0], points[:, 1])
+plt.title("Zufällige 2D-Punkte")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.show()</property>
+   <property type="bool" name="plot">true</property>
+   <property-container name="dynamicInPorts">
+    <property type="PortInfoIn" name="{f5e5a687-e4e3-43fd-bf46-8fa34fd82064}">
+     <property type="QString" name="TypeId">intelli::ByteArrayData</property>
+     <property type="QString" name="Caption">points</property>
+     <property type="bool" name="CaptionVisible">true</property>
+     <property type="bool" name="Optional">true</property>
+     <property type="uint" name="PortId">0</property>
+    </property>
+   </property-container>
+   <property-container name="dynamicOutPorts"/>
+  </object>
+  <object class="intelli::StringInputNode" uuid="{d796f965-4d6c-460c-8cc4-a9f1b6ec6784}" name="Help">
+   <property type="uint" name="id">3</property>
+   <property type="double" name="posX">-122</property>
+   <property type="double" name="posY">-116</property>
+   <property type="int" name="sizeWidth">379</property>
+   <property type="int" name="sizeHeight">20</property>
+   <property type="bool" name="isActive">true</property>
+   <property type="QString" name="value">This example uses the transfer of python datatypes via a BytaArrayData</property>
+   <property type="bool" name="isArg">false</property>
+  </object>
+ </objectlist>
+</object>

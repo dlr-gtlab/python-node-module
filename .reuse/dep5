@@ -1,0 +1,18 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: PythonNode
+Upstream-Contact:  <>
+Source: 
+
+Files: .github/* README.md CHANGELOG.md src/*.json
+Copyright: 2024 German Aerospace Center (DLR)
+License: Apache-2.0
+
+
+Files: images/*
+Copyright: 2024 German Aerospace Center (DLR)
+License: CC-BY-SA-4.0
+
+
+Files: .bumpversion.cfg .gitignore .gitlab/* .gitlab-ci.yml
+Copyright: 2024 German Aerospace Center (DLR)
+License: CC0-1.0
