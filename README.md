@@ -1,12 +1,14 @@
-# GtPythonGraph Module
+# Python nodes for Gtlab-Intelligraph
 
- Module to combine the abilities of python and the intelli graph system.
- The nodes can be used flexibly to script processes in individual process steps. 
- Data forwarding is possible for a large number of data classes in the system. 
- A matplotlib interface is also integrated, which makes it possible to display plots based on the scripts directly within the graph in the node.
- This is illustrated in the shown example:
+This GTlab module allows to run python scripts in intelligraph workflows.
   
   ![Example workflow using python nodes](images/Example.png)
+
+## Features ⭐
+  - 🐍 Run python scripts as intelligraph nodes
+  - 🔌Custom input / output ports to pass python data
+  - 📊Matplotlib interface to draw plots directly in the node
+
     
  ## License
 
