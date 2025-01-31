@@ -1,9 +1,0 @@
-## What is the purpose of the change?
-- ...
-
-## Which tasks have to be performed?
-- [ ] ...
-
-
-## Are there any acceptance criteria to check?
-- [ ] ...

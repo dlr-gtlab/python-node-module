@@ -47,3 +47,17 @@ cmake --build build_dir
 cmake --build build_dir --target install
 ```
 
+## FAQ
+### Why can I not see my plot in the node?
+To display a plot in the node, there are a few things to consider:
+ - The script in the Python node has an interface for matplotlib. Only plots created with it can be displayed. The scripts must end with the show() function of the plot object.
+ - The node has a "Plot enabled" property. This must be set to true.
+ - The plot can only be displayed if the node has a certain size. If in doubt, you can check this by dragging the node larger (in the bottom right-hand corner of the node).
+ 
+### How are python objects exchanged between the nodes?
+Connections of the nodes' ports can be used for data exchange between the nodes. Only ports of the same type can be connected to each other.
+The Python node can process all available types on the input side.
+Many provided data types have a value() function or similar to make the data of the connection accessible in the Python script. This is also demonstrated in the attached examples.
+A few generic data types are enabled on the output side. 
+However, the intelli::ByteArrayData data type can be used to pass Python objects directly. 
+In this case, the Python functionality "pickl" is used. This method is therefore restricted to data that [is pickl-capable.] (https://docs.python.org/3/library/pickle.html#what-can-be-pickled-and-unpickled)
