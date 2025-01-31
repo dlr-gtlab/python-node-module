@@ -1,0 +1,158 @@
+<object class="intelli::Graph" uuid="{b1b1445c-faf0-4345-94d2-9be95ac28eb9}" name="TwoTools">
+ <property type="uint" name="id">4294967295</property>
+ <property type="double" name="posX">0</property>
+ <property type="double" name="posY">0</property>
+ <property type="int" name="sizeWidth">-1</property>
+ <property type="int" name="sizeHeight">-1</property>
+ <property type="bool" name="isActive">true</property>
+ <objectlist>
+  <object class="intelli::ConnectionGroup" uuid="{ae332d4b-f281-49ee-96c2-9e9966ab65b1}" name="__connections">
+   <objectlist>
+    <object class="intelli::Connection" uuid="{072e8e47-ebcb-487b-b8b8-c7657092d27c}" name="NodeConnection[2:0/0:1]">
+     <property type="uint" name="inNodeId">0</property>
+     <property type="uint" name="inPort">1</property>
+     <property type="uint" name="outNodeId">2</property>
+     <property type="uint" name="outPort">0</property>
+    </object>
+    <object class="intelli::Connection" uuid="{bd35c394-7816-4ef6-b6c6-7b9f128cce5f}" name="NodeConnection[3:0/0:0]">
+     <property type="uint" name="inNodeId">0</property>
+     <property type="uint" name="inPort">0</property>
+     <property type="uint" name="outNodeId">3</property>
+     <property type="uint" name="outPort">0</property>
+    </object>
+    <object class="intelli::Connection" uuid="{26eb9a43-d383-47e3-80db-f6273e9da642}" name="NodeConnection[0:2/1:1]">
+     <property type="uint" name="inNodeId">1</property>
+     <property type="uint" name="inPort">1</property>
+     <property type="uint" name="outNodeId">0</property>
+     <property type="uint" name="outPort">2</property>
+    </object>
+    <object class="intelli::Connection" uuid="{40a1458f-cd63-49de-ba5c-3b00b5c9affa}" name="NodeConnection[1:0/4:0]">
+     <property type="uint" name="inNodeId">4</property>
+     <property type="uint" name="inPort">0</property>
+     <property type="uint" name="outNodeId">1</property>
+     <property type="uint" name="outPort">0</property>
+    </object>
+   </objectlist>
+  </object>
+  <object class="GtpyPythonNode" uuid="{9da5725b-c39e-4953-85e3-13ed3c0d9671}" name="Tool 1">
+   <property type="uint" name="id">0</property>
+   <property type="double" name="posX">-110</property>
+   <property type="double" name="posY">80</property>
+   <property type="int" name="sizeWidth">28</property>
+   <property type="int" name="sizeHeight">24</property>
+   <property type="bool" name="isActive">true</property>
+   <property type="QString" name="script"># To access the input value, use
+# thevalue = &lt;input_value_name>.value()
+#
+# To write to an output value, use e.g.
+# &lt;out_value_name> = 42
+
+print("Running Tool 1")
+
+result = a.value() * b.value()
+
+# here, you could wrap instead an arbitraty external tool
+# just use as many input and output variables as you want</property>
+   <property type="bool" name="plot">false</property>
+   <property-container name="dynamicInPorts">
+    <property type="PortInfoIn" name="0">
+     <property type="QString" name="TypeId">intelli::DoubleData</property>
+     <property type="QString" name="Caption">a</property>
+     <property type="bool" name="CaptionVisible">true</property>
+     <property type="bool" name="Optional">true</property>
+     <property type="uint" name="PortId">0</property>
+    </property>
+    <property type="PortInfoIn" name="1">
+     <property type="QString" name="TypeId">intelli::IntData</property>
+     <property type="QString" name="Caption">b</property>
+     <property type="bool" name="CaptionVisible">true</property>
+     <property type="bool" name="Optional">true</property>
+     <property type="uint" name="PortId">1</property>
+    </property>
+   </property-container>
+   <property-container name="dynamicOutPorts">
+    <property type="PortInfoOut" name="2">
+     <property type="QString" name="TypeId">intelli::DoubleData</property>
+     <property type="QString" name="Caption">result</property>
+     <property type="bool" name="CaptionVisible">true</property>
+     <property type="bool" name="Optional">true</property>
+     <property type="uint" name="PortId">2</property>
+    </property>
+   </property-container>
+  </object>
+  <object class="GtpyPythonNode" uuid="{8f22735c-4d8b-470e-9212-589020d244fe}" name="Tool 2">
+   <property type="uint" name="id">1</property>
+   <property type="double" name="posX">30</property>
+   <property type="double" name="posY">80</property>
+   <property type="int" name="sizeWidth">31</property>
+   <property type="int" name="sizeHeight">38</property>
+   <property type="bool" name="isActive">true</property>
+   <property type="QString" name="script">out_value = in_value.value()**2
+
+</property>
+   <property type="bool" name="plot">false</property>
+   <property-container name="dynamicInPorts">
+    <property type="PortInfoIn" name="1">
+     <property type="QString" name="TypeId">intelli::DoubleData</property>
+     <property type="QString" name="Caption">in_value</property>
+     <property type="bool" name="CaptionVisible">true</property>
+     <property type="bool" name="Optional">true</property>
+     <property type="uint" name="PortId">1</property>
+    </property>
+   </property-container>
+   <property-container name="dynamicOutPorts">
+    <property type="PortInfoOut" name="0">
+     <property type="QString" name="TypeId">intelli::DoubleData</property>
+     <property type="QString" name="Caption">out_value</property>
+     <property type="bool" name="CaptionVisible">true</property>
+     <property type="bool" name="Optional">true</property>
+     <property type="uint" name="PortId">0</property>
+    </property>
+   </property-container>
+  </object>
+  <object class="intelli::IntInputNode" uuid="{ba6a4657-4b2e-401a-b4db-ad8e0d5efa49}" name="Integer Input">
+   <property type="uint" name="id">2</property>
+   <property type="double" name="posX">-430</property>
+   <property type="double" name="posY">140</property>
+   <property type="int" name="sizeWidth">-1</property>
+   <property type="int" name="sizeHeight">-1</property>
+   <property type="bool" name="isActive">true</property>
+   <property type="int" name="value">2</property>
+   <property type="bool" name="isArg">false</property>
+   <property type="int" name="min">-10</property>
+   <property type="int" name="max">10</property>
+   <property type="QString" name="type">Text</property>
+  </object>
+  <object class="intelli::DoubleInputNode" uuid="{e74a31a6-ee60-41cd-b986-1fde79544485}" name="Double Input">
+   <property type="uint" name="id">3</property>
+   <property type="double" name="posX">-430</property>
+   <property type="double" name="posY">50</property>
+   <property type="int" name="sizeWidth">-1</property>
+   <property type="int" name="sizeHeight">-1</property>
+   <property type="bool" name="isActive">true</property>
+   <property type="double" name="value">3.14</property>
+   <property type="bool" name="isArg">false</property>
+   <property type="double" name="min">-10</property>
+   <property type="double" name="max">10</property>
+   <property type="QString" name="type">Text</property>
+  </object>
+  <object class="intelli::NumberDisplayNode" uuid="{a97dcbb1-b273-457c-8d17-be288dadda9b}" name="Number Display">
+   <property type="uint" name="id">4</property>
+   <property type="double" name="posX">210</property>
+   <property type="double" name="posY">80</property>
+   <property type="int" name="sizeWidth">-1</property>
+   <property type="int" name="sizeHeight">-1</property>
+   <property type="bool" name="isActive">true</property>
+  </object>
+  <object class="intelli::StringInputNode" uuid="{accfb3b8-2ab4-4d5f-a006-5cd2aa002dfe}" name="Help">
+   <property type="uint" name="id">5</property>
+   <property type="double" name="posX">-107</property>
+   <property type="double" name="posY">-17</property>
+   <property type="int" name="sizeWidth">338</property>
+   <property type="int" name="sizeHeight">20</property>
+   <property type="bool" name="isActive">true</property>
+   <property type="QString" name="value">To add new input / output ports, just right-click on the Tool nodes. </property>
+   <property type="bool" name="isArg">false</property>
+  </object>
+ </objectlist>
+</object>

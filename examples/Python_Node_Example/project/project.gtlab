@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GTLAB projectname="PythonNodesExample" version="2.1.0-dev">
+    <env-footprint>
+        <hash>a2aefebb37c74df37ca4410eb1ccd85345fe2521aeec9d74b1023507139634bc</hash>
+        <core-ver>2.1.0-dev</core-ver>
+        <modules>
+            <module>
+                <id>ACDC Tools</id>
+                <ver>3.8.1</ver>
+            </module>
+            <module>
+                <id>Airfoil Collection</id>
+                <ver>3.3.0</ver>
+            </module>
+            <module>
+                <id>Basic Tools</id>
+                <ver>2.4.0</ver>
+            </module>
+            <module>
+                <id>DLRp2 Interface Module</id>
+                <ver>3.2.3</ver>
+            </module>
+            <module>
+                <id>Data Analytics</id>
+                <ver>1.0.3</ver>
+            </module>
+            <module>
+                <id>Fluid Collection</id>
+                <ver>3.3.0</ver>
+            </module>
+            <module>
+                <id>Fuel Collection</id>
+                <ver>3.3.0</ver>
+            </module>
+            <module>
+                <id>Geometry</id>
+                <ver>0.2.1</ver>
+            </module>
+            <module>
+                <id>HDF5 Module</id>
+                <ver>0.6.3</ver>
+            </module>
+            <module>
+                <id>IntelliGraph</id>
+                <ver>0.12.0</ver>
+            </module>
+            <module>
+                <id>Map Collection</id>
+                <ver>3.3.1</ver>
+            </module>
+            <module>
+                <id>MassEstimation</id>
+                <ver>0.2.0</ver>
+            </module>
+            <module>
+                <id>Material Collection</id>
+                <ver>4.0.2</ver>
+            </module>
+            <module>
+                <id>NodesPlayGround</id>
+                <ver>1.0.0</ver>
+            </module>
+            <module>
+                <id>Optimization</id>
+                <ver>0.0.4</ver>
+            </module>
+            <module>
+                <id>Performance</id>
+                <ver>4.2.2</ver>
+            </module>
+            <module>
+                <id>PreDesign</id>
+                <ver>3.5.5</ver>
+            </module>
+            <module>
+                <id>PreDesign Node</id>
+                <ver>0.1.2</ver>
+            </module>
+            <module>
+                <id>Python Module (Python 3.9)</id>
+                <ver>1.6.1</ver>
+            </module>
+            <module>
+                <id>Python Setup</id>
+                <ver>1.6.1</ver>
+            </module>
+            <module>
+                <id>PythonNode</id>
+                <ver>0.3.0</ver>
+            </module>
+            <module>
+                <id>RadialCompressor</id>
+                <ver>0.6.0</ver>
+            </module>
+            <module>
+                <id>Sketchpad</id>
+                <ver>2.5.1</ver>
+            </module>
+        </modules>
+    </env-footprint>
+    <comment>This project demonstrates the tool coupling
+of two python tools using the graph workflow
+architecture.</comment>
+    <MODULES>
+        <MODULE name="IntelliGraph" version="0.12.0"/>
+    </MODULES>
+    <LABELS>
+        <object class="GtLabel" name="Default" uuid="{8e26d023-63ae-4bbd-9d7c-7329a0a9e42a}"/>
+    </LABELS>
+</GTLAB>
