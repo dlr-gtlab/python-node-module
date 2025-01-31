@@ -283,6 +283,11 @@ GtpyPythonNode::eval()
         gtError() << tr("Script evaluation failed in python node");
         gtError() << script();
 
+        for (auto&& p : ports(PortType::Out))
+        {
+            setNodeData(p.id(), nullptr);
+        }
+
         return;
     }
 
@@ -398,15 +403,15 @@ GtpyPythonNode::serealizePythonData(int context)
             {
                 gtWarning() << tr("Cannot read value for output port "
                                   "'%1'").arg(data_tmp.caption);
+
+                setNodeData(data_tmp.id(), nullptr);
+
                 continue;
             }
 
             if (data_tmp.typeId == GT_CLASSNAME(intelli::ObjectData))
             {
                 auto* obj = qvariant_cast<QObject *>(var);
-
-                gtTrace() << "obj" << obj;
-
                 if (auto* objFromPython = qobject_cast<GtObject*>(obj))
                 {
                     setNodeData(data_tmp.id(),
@@ -417,16 +422,12 @@ GtpyPythonNode::serealizePythonData(int context)
             {
                 QString string = var.toString();
 
-                gtTrace() << "string" << string;
-
                 setNodeData(data_tmp.id(),
                             std::make_shared<intelli::StringData>(string));
             }
             else if (data_tmp.typeId == GT_CLASSNAME(intelli::DoubleData))
             {
                 double val = var.toDouble();
-
-                gtTrace() << "double" << val;
 
                 setNodeData(data_tmp.id(),
                             std::make_shared<intelli::DoubleData>(val));
@@ -435,16 +436,12 @@ GtpyPythonNode::serealizePythonData(int context)
             {
                 int val = var.toInt();
 
-                gtTrace() << "int" << val;
-
                 setNodeData(data_tmp.id(),
                             std::make_shared<intelli::IntData>(val));
             }
             else if (data_tmp.typeId == GT_CLASSNAME(intelli::BoolData))
             {
                 bool val = var.toBool();
-
-                gtTrace() << "bool" << val;
 
                 setNodeData(data_tmp.id(),
                             std::make_shared<intelli::BoolData>(val));
