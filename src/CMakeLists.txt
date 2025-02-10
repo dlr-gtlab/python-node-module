@@ -31,6 +31,7 @@ add_gtlab_module(PythonNode SOURCES ${HEADERS} ${SOURCES} ${RESOURCES}
     MODULE_ID "PythonNode"
     README_FILE "${PROJECT_SOURCE_DIR}/README.md"
     CHANGELOG_FILE "${PROJECT_SOURCE_DIR}/CHANGELOG.md"
+	EXAMPLES_DIR "${PROJECT_SOURCE_DIR}/examples/"
 )
 
 target_link_libraries(PythonNode

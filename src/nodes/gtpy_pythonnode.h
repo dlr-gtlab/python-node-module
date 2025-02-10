@@ -28,10 +28,20 @@ constexpr const char* script_init_content = R"(
 ################################################################################
 # ...
 ################################################################################
+#example imports
 #import pandas as pd
 #import numpy as np
 #import matplotlib.pyplot as plt
-
+#
+# example value access:
+# x_val is the Caption of the port (can be set in the property widget)
+# x = x_val.value()
+#
+# compressorIn is the caption. 
+# The object() function only allows rea only access and should not be used 
+# for objects to set to output nodes
+# compressor = compressorIn.object().clone() 
+#
 )";
 } // nodes
 } // gt
