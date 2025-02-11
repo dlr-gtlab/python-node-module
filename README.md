@@ -1,4 +1,4 @@
-# Python nodes for Gtlab-Intelligraph
+# Python nodes for GTlab-Intelligraph
 
 This GTlab module allows to run python scripts in intelligraph workflows.
   
