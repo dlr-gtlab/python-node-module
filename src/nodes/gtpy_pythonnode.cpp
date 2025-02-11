@@ -10,6 +10,8 @@
 
 #include "gtpy_pythonnode.h"
 
+#include "gtpy_gilscope.h"
+
 #include "gtpy_contextmanager.h"
 #include "gtpy_tempdir.h"
 
@@ -152,7 +154,8 @@ GtpyPythonNode::GtpyPythonNode() :
         connect(&m_plot_active, &GtBoolProperty::changed, plot, togglePlot);
 
         auto openEditor = [w_ = w.get(), this](){
-            auto state = PyGILState_Ensure();
+            GTPY_GIL_SCOPE
+
             GtpnPythonScriptDialog dialog;
 
             dialog.setScript(m_script);
@@ -200,7 +203,6 @@ GtpyPythonNode::GtpyPythonNode() :
 
             settings.setValue("pythonNode/python_editor/size", dialog.size());
 
-            PyGILState_Release(state);
         };
 
         connect(this, &GtpyPythonNode::onComputeChange, plot,
@@ -314,7 +316,7 @@ GtpyPythonNode::deserializePythonData(int context)
     // register dynamic input port variables
     auto& pinlist = ports(intelli::PortType::In);
 
-    auto state = PyGILState_Ensure();
+    GTPY_GIL_SCOPE
 
     for (int i = 0; i < pinlist.size(); ++i)
     {
@@ -345,8 +347,6 @@ GtpyPythonNode::deserializePythonData(int context)
     }
 
     GtpyContextManager::instance()->evalScript(context, "");
-
-    PyGILState_Release(state);
 }
 
 void
@@ -356,7 +356,7 @@ GtpyPythonNode::serealizePythonData(int context)
 
     std::vector<Node::PortInfo> const poutlist = ports(intelli::PortType::Out);
 
-    auto state = PyGILState_Ensure();
+    GTPY_GIL_SCOPE
 
     for (int i = 0; i < poutlist.size(); ++i)
     {
@@ -448,8 +448,6 @@ GtpyPythonNode::serealizePythonData(int context)
             }
         }
     }
-
-    PyGILState_Release(state);
 }
 
 void
