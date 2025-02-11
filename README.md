@@ -53,6 +53,11 @@ To display a plot in the node, there are a few things to consider:
  - The script in the Python node has an interface for matplotlib. Only plots created with it can be displayed. The scripts must end with the show() function of the plot object.
  - The node has a "Plot enabled" property. This must be set to true.
  - The plot can only be displayed if the node has a certain size. If in doubt, you can check this by dragging the node larger (in the bottom right-hand corner of the node).
+
+<p align="center">
+  <img src="images/PythonNodes.png" alt="Plotting with nodes" width="800"/>
+</p>
+
  
 ### How are python objects exchanged between the nodes?
 Connections of the nodes' ports can be used for data exchange between the nodes. Only ports of the same type can be connected to each other.
