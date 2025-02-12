@@ -192,7 +192,8 @@ GtpyPythonNode::GtpyPythonNode() :
         connect(&m_plot_active, &GtBoolProperty::changed, plot, togglePlot);
 
         auto openEditor = [w_ = w.get(), this](){
-            auto state = PyGILState_Ensure();
+            GTPY_GIL_SCOPE
+
             GtpnPythonScriptDialog dialog;
 
             dialog.setScript(m_script);
@@ -239,8 +240,6 @@ GtpyPythonNode::GtpyPythonNode() :
             }
 
             settings.setValue("pythonNode/python_editor/size", dialog.size());
-
-            PyGILState_Release(state);
         };
 
         connect(this, &GtpyPythonNode::onComputeChange, plot,
@@ -423,8 +422,6 @@ GtpyPythonNode::serealizePythonData(int context)
             {
                 auto* obj = qvariant_cast<QObject *>(var);
 
-                gtTrace() << "obj" << obj;
-
                 if (auto* objFromPython = qobject_cast<GtObject*>(obj))
                 {
                     setNodeData(data_tmp.id(),
@@ -435,16 +432,12 @@ GtpyPythonNode::serealizePythonData(int context)
             {
                 QString string = var.toString();
 
-                gtTrace() << "string" << string;
-
                 setNodeData(data_tmp.id(),
                             std::make_shared<intelli::StringData>(string));
             }
             else if (data_tmp.typeId == GT_CLASSNAME(intelli::DoubleData))
             {
                 double val = var.toDouble();
-
-                gtTrace() << "double" << val;
 
                 setNodeData(data_tmp.id(),
                             std::make_shared<intelli::DoubleData>(val));
@@ -453,16 +446,12 @@ GtpyPythonNode::serealizePythonData(int context)
             {
                 int val = var.toInt();
 
-                gtTrace() << "int" << val;
-
                 setNodeData(data_tmp.id(),
                             std::make_shared<intelli::IntData>(val));
             }
             else if (data_tmp.typeId == GT_CLASSNAME(intelli::BoolData))
             {
                 bool val = var.toBool();
-
-                gtTrace() << "bool" << val;
 
                 setNodeData(data_tmp.id(),
                             std::make_shared<intelli::BoolData>(val));
