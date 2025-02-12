@@ -28,20 +28,10 @@ constexpr const char* script_init_content = R"(
 ################################################################################
 # ...
 ################################################################################
-#example imports
 #import pandas as pd
 #import numpy as np
 #import matplotlib.pyplot as plt
-#
-# example value access:
-# x_val is the Caption of the port (can be set in the property widget)
-# x = x_val.value()
-#
-# compressorIn is the caption. 
-# The object() function only allows rea only access and should not be used 
-# for objects to set to output nodes
-# compressor = compressorIn.object().clone() 
-#
+
 )";
 } // nodes
 } // gt
@@ -52,35 +42,38 @@ namespace python {
 
 /**
  * @brief deserializeToContext
- * This function is often called multiple times.
- * Make sure to call
- *   auto state = PyGILState_Ensure();
- * before using this function and
- *   PyGILState_Release(state);
- * afterwards to avoid problems with paralelism
- *
  * @param context
- * @param pvd
+ * @param data
+ * @param varName
  */
-void deserializeToContext(int context, const intelli::ByteArrayData* pvd,
-                          QString const& caption);
+    void deserializeToContext(int context, const QByteArray& data,
+                              QString const& varName);
 
+/**
+ * @brief deserializeObjectToContext
+ * @param context
+ * @param obj
+ * @param varName
+ */
+    bool deserializeObjectToContext(int context, QObject* obj,
+                                    QString const& varName);
 
 /**
  * @brief serializeFromContextToVariant
- * This function is often called multiple times.
- * Make sure to call
- *   auto state = PyGILState_Ensure();
- * before using this function and
- *   PyGILState_Release(state);
- * afterwards to avoid problems with paralelism
- *
  * @param context
- * @param pd
+ * @param varName
+ * @param pickle - flag if the variable should be pickled
  * @return
  */
-QVariant serializeFromContextToVariant(int context,
-                                       const intelli::Node::PortInfo& pd);
+    QVariant serializeFromContextToVariant(int context,
+                                           const QString& varName,
+                                           bool pickle = false);
+
+    bool evalScript(int context, QString const& script);
+
+    int initCalculatorRunContext();
+
+    void clearContext(int context);
 
 } /// python
 } /// nodes
