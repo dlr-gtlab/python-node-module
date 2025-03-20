@@ -24,6 +24,7 @@
 #include <intelli/data/double.h>
 #include <intelli/data/bool.h>
 #include <intelli/data/int.h>
+#include <intelli/data/stringlist.h>
 
 #include "../gui/gtpn_pythonscriptdialog.h"
 #include "qsvgwidget.h"
@@ -98,7 +99,8 @@ GtpyPythonNode::GtpyPythonNode() :
              GT_CLASSNAME(intelli::DoubleData),
              GT_CLASSNAME(intelli::IntData),
              GT_CLASSNAME(intelli::StringData),
-             GT_CLASSNAME(intelli::BoolData)}
+             GT_CLASSNAME(intelli::BoolData),
+             GT_CLASSNAME(intelli::StringListData)}
              )
 {
     setFlag(GtObject::UserRenamable);
@@ -424,6 +426,13 @@ GtpyPythonNode::serealizePythonData(int context)
 
                 setNodeData(data_tmp.id(),
                             std::make_shared<intelli::StringData>(string));
+            }
+            else if (data_tmp.typeId == GT_CLASSNAME(intelli::StringListData))
+            {
+                QStringList string = var.toStringList();
+
+                setNodeData(data_tmp.id(),
+                            std::make_shared<intelli::StringListData>(string));
             }
             else if (data_tmp.typeId == GT_CLASSNAME(intelli::DoubleData))
             {
