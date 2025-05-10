@@ -10,8 +10,6 @@
 
 #include "gtpy_pythonnode.h"
 
-#include "gtpy_gilscope.h"
-
 #include "gtpy_contextmanager.h"
 #include "gtpy_tempdir.h"
 
@@ -37,36 +35,22 @@
 #include <QMenu>
 #include <QDir>
 
-// This raw strings is used for the internal serialization and deserialization
-// of python classes
-const QString p_deser_script = R"(
+void
+gt::nodes::python::deserializeToContext(int context,
+                                        const QByteArray& data,
+                                        const QString& varName)
+{
+    GTPY_GIL_SCOPE
+
+    QString p_deser_script_tmp = R"(
 import pickle
 ser_data_hex = __serialized_data_tmp
 ser_data_bytes = bytes.fromhex(ser_data_hex)
 $$var_name$$ = pickle.loads(ser_data_bytes)
 )";
+    p_deser_script_tmp.replace("$$var_name$$", varName);
 
-const QString p_ser_script = R"(
-import pickle
-#gtError() << "Serialization Scipt execution"
-#gtError() << $$var_name$$
-__deserialized_data_tmp = pickle.dumps($$var_name$$)
-#gtError() << "Serialization Scipt execution finished"
-)";
-
-void
-gt::nodes::python::deserializeToContext(int context,
-                                        const intelli::ByteArrayData* pvd,
-                                        const QString& caption)
-{
-    if (!pvd) return;
-
-    QByteArray in = pvd->data();
-
-    QString p_deser_script_tmp = p_deser_script;
-    p_deser_script_tmp.replace("$$var_name$$", caption);
-
-    QString ser_data_hex = in.toHex();
+    QString ser_data_hex = data.toHex();
     GtpyContextManager::instance()->addVariable(context,
                                                 "__serialized_data_tmp",
                                                 ser_data_hex);
@@ -74,12 +58,47 @@ gt::nodes::python::deserializeToContext(int context,
     GtpyContextManager::instance()->evalScript(context, p_deser_script_tmp);
 }
 
+bool
+gt::nodes::python::deserializeObjectToContext(int context, QObject* obj,
+                                              const QString& varName)
+{
+    GTPY_GIL_SCOPE
+    if (!GtpyContextManager::instance()->addGtObject(context,
+                                                     varName,
+                                                     obj))
+    {
+        gtError() << QObject::tr("Cannot add '%1' to python context").arg(
+            varName);
+        return false;
+    }
+
+    gtTrace() << QObject::tr("Added '%1' to context as input").arg(varName);
+
+    return true;
+}
+
 QVariant
 gt::nodes::python::serializeFromContextToVariant(
-        int context, const intelli::Node::PortInfo& pd)
+    int context, const QString& varName, bool pickle)
 {
-    QString p_ser_script_tmp = p_ser_script;
-    p_ser_script_tmp.replace("$$var_name$$", pd.caption);
+    GTPY_GIL_SCOPE
+
+    QString p_ser_script_tmp;
+
+    if (pickle)
+    {
+        p_ser_script_tmp = R"(
+import pickle
+__deserialized_data_tmp = pickle.dumps($$var_name$$)
+)";
+    }
+    else
+    {
+        p_ser_script_tmp = R"(
+__deserialized_data_tmp = $$var_name$$)";
+    }
+
+    p_ser_script_tmp.replace("$$var_name$$", varName);
     gtTrace() << p_ser_script_tmp;
     GtpyContextManager::instance()->evalScript(context, p_ser_script_tmp);
 
@@ -87,6 +106,25 @@ gt::nodes::python::serializeFromContextToVariant(
                 context,  "__deserialized_data_tmp");
 
     return var;
+}
+
+bool
+gt::nodes::python::evalScript(int context, const QString& script)
+{
+    return GtpyContextManager::instance()->evalScript(context, script);
+}
+
+void
+gt::nodes::python::clearContext(int context)
+{
+    GtpyContextManager::instance()->deleteContext(context);
+}
+
+int
+gt::nodes::python::initCalculatorRunContext()
+{
+    return GtpyContextManager::instance()->createNewContext(
+        GtpyContextManager::CalculatorRunContext, true);
 }
 
 
@@ -204,7 +242,6 @@ GtpyPythonNode::GtpyPythonNode() :
             }
 
             settings.setValue("pythonNode/python_editor/size", dialog.size());
-
         };
 
         connect(this, &GtpyPythonNode::onComputeChange, plot,
@@ -275,22 +312,18 @@ GtpyPythonNode::eval()
 {
     emit timePassed(0);
     // init python context
-    int context = GtpyContextManager::instance()->createNewContext(
-        GtpyContextManager::CalculatorRunContext, true);
+    int context = gt::nodes::python::initCalculatorRunContext();
 
     /// handle python input variables and add also rest of the input ports
     /// to context
     deserializePythonData(context);
 
-    if (!GtpyContextManager::instance()->evalScript(context, script()))
+    bool success = gt::nodes::python::evalScript(context, script());
+
+    if (!success)
     {
         gtError() << tr("Script evaluation failed in python node");
         gtError() << script();
-
-        for (auto&& p : ports(PortType::Out))
-        {
-            setNodeData(p.id(), nullptr);
-        }
 
         return;
     }
@@ -298,11 +331,9 @@ GtpyPythonNode::eval()
     /// handle python output variables
     serealizePythonData(context);
 
-    GtpyContextManager::instance()->removeAllAddedObjects(context);
+    gt::nodes::python::clearContext(context);
 
     emit timePassed(100.);
-
-    GtpyContextManager::instance()->deleteContext(context);
 
     if (m_plot_active)
     {
@@ -318,8 +349,6 @@ GtpyPythonNode::deserializePythonData(int context)
     // register dynamic input port variables
     auto& pinlist = ports(intelli::PortType::In);
 
-    GTPY_GIL_SCOPE
-
     for (int i = 0; i < pinlist.size(); ++i)
     {
         auto& data_tmp = pinlist[i];
@@ -327,28 +356,18 @@ GtpyPythonNode::deserializePythonData(int context)
         if (auto* pd = qobject_cast<intelli::ByteArrayData const*>(
                     nodeData(data_tmp.id()).get()))
         {
-            gt::nodes::python::deserializeToContext(context, pd,
+            gt::nodes::python::deserializeToContext(context, pd->data(),
                                                     data_tmp.caption);
         }
         else if (auto pd2 = nodeData(data_tmp.id()))
         {
             auto* helper = const_cast<intelli::NodeData*>(pd2.get());
 
-            if (!GtpyContextManager::instance()->addGtObject(context,
-                                                             data_tmp.caption,
-                                                             helper))
-            {
-                gtError() << tr("Cannot add '%1' to python context").arg(
-                                 data_tmp.caption);
-                continue;
-            }
-
-            gtTrace() << tr("Added '%1' to context as input").arg(
-                             data_tmp.caption);
+            gt::nodes::python::deserializeObjectToContext(context,
+                                                          helper,
+                                                          data_tmp.caption);
         }
     }
-
-    GtpyContextManager::instance()->evalScript(context, "");
 }
 
 void
@@ -358,19 +377,17 @@ GtpyPythonNode::serealizePythonData(int context)
 
     std::vector<Node::PortInfo> const poutlist = ports(intelli::PortType::Out);
 
-    GTPY_GIL_SCOPE
-
     for (int i = 0; i < poutlist.size(); ++i)
     {
         auto& data_tmp = poutlist[i];
 
-        gtDebug() << tr("extracting dynamic out data... ") << data_tmp.caption;
+        gtTrace() << tr("extracting dynamic out data... ") << data_tmp.caption;
 
         /// check each outport for typeId which was used
         if (data_tmp.typeId == GT_CLASSNAME(intelli::ByteArrayData))
         {
             QVariant var = gt::nodes::python::serializeFromContextToVariant(
-                        context, data_tmp);
+                        context, data_tmp.caption, true);
 
             if (var.isValid())
             {
@@ -390,21 +407,13 @@ GtpyPythonNode::serealizePythonData(int context)
             ///     aswell as string, double and bool
             gtTrace() << tr("Serialize datatype:") << data_tmp.typeId;
 
-            QString p_ser_script_tmp =
-                    R"(__deserialized_Objdata_tmp = $$var_name$$)";
-
-            p_ser_script_tmp.replace("$$var_name$$", data_tmp.caption);
-            gtTrace() << tr("Script execution") << p_ser_script_tmp;
-            GtpyContextManager::instance()->evalScript(context,
-                                                       p_ser_script_tmp);
-
-            QVariant var = GtpyContextManager::instance()->getVariable(
-                        context,  "__deserialized_Objdata_tmp");
+            QVariant var = gt::nodes::python::serializeFromContextToVariant(
+                context, data_tmp.caption, false);
 
             if (!var.isValid())
             {
-                gtWarning() << tr("Cannot read value for output port "
-                                  "'%1'").arg(data_tmp.caption);
+                gtWarning() << tr("Cannot read value for output port '%1'").arg(
+                    data_tmp.caption);
 
                 setNodeData(data_tmp.id(), nullptr);
 
@@ -414,6 +423,7 @@ GtpyPythonNode::serealizePythonData(int context)
             if (data_tmp.typeId == GT_CLASSNAME(intelli::ObjectData))
             {
                 auto* obj = qvariant_cast<QObject *>(var);
+
                 if (auto* objFromPython = qobject_cast<GtObject*>(obj))
                 {
                     setNodeData(data_tmp.id(),
@@ -457,6 +467,7 @@ GtpyPythonNode::serealizePythonData(int context)
             }
         }
     }
+
 }
 
 void
@@ -501,3 +512,4 @@ GtpyPythonNode::appendErrorMessage(QString string, int i)
 {
     gtLogOnce(Error) << tr("Python Error: %1").arg(string);
 }
+
