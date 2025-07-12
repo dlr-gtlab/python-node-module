@@ -114,8 +114,8 @@ GtpyPythonNode::GtpyPythonNode() :
     registerProperty(m_plot_active);
 
     connect(GtpyContextManager::instance(),
-            SIGNAL(errorMessage(QString, int)), this,
-            SLOT(appendErrorMessage(QString, int)));
+            SIGNAL(errorMessage(QString,int,QString)), this,
+            SLOT(appendErrorMessage(QString,int,QString)));
 
     // registering the widget factory
     registerWidgetFactory([=](intelli::Node& /*this*/){
@@ -277,6 +277,8 @@ GtpyPythonNode::eval()
     // init python context
     int context = GtpyContextManager::instance()->createNewContext(
         GtpyContextManager::CalculatorRunContext, true);
+
+    GtpyContextManager::instance()->setLoggingPrefix(context, objectName());
 
     /// handle python input variables and add also rest of the input ports
     /// to context
@@ -497,7 +499,9 @@ GtpyPythonNode::loadPlaceHolder(QSvgWidget* w)
 }
 
 void
-GtpyPythonNode::appendErrorMessage(QString string, int i)
+GtpyPythonNode::appendErrorMessage(QString string, int i, QString prefix)
 {
-    gtLogOnce(Error) << tr("Python Error: %1").arg(string);
+    if (prefix.isEmpty()) prefix = "Python Node";
+
+    gtLogOnce(Error) << tr("[%1] %2").arg(prefix, string);
 }

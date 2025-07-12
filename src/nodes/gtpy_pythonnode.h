@@ -126,7 +126,7 @@ private:
     void loadPlaceHolder(QSvgWidget* w);
 
 private slots:
-    void appendErrorMessage(QString string, int i);
+    void appendErrorMessage(QString string, int i, QString prefix);
 
 signals:
     void timePassed(int progress);
