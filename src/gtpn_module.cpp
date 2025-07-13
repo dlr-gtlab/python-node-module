@@ -20,7 +20,7 @@
 GtVersionNumber
 GtpnModule::version()
 {
-    return GtVersionNumber(0, 4, 0);
+    return GtVersionNumber(0, 5, 0);
 }
 
 QString
