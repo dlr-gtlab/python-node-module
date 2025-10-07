@@ -63,12 +63,10 @@ PyPPObject dictFromUserVars(const intelli::GraphUserVariables& vars)
 
     auto dict = PyPPDict_New();
 
-    const auto& keys = vars.keys();
-    for (const auto& key : keys)
-    {
+    vars.visit([&dict](const QString& key, const QVariant& value){
         PyPPDict_SetItem(dict, key.toStdString().c_str(),
-                         PyPPObject::fromQVariant(vars.value(key)));
-    }
+                         PyPPObject::fromQVariant(value));
+    });
 
     return dict;
 }
