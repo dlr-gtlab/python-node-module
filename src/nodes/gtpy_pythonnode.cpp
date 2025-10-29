@@ -19,6 +19,7 @@
 #include "gt_sharedfunction.h"
 
 #include <intelli/nodedata.h>
+#include <intelli/graphuservariables.h>
 #include <intelli/data/object.h>
 #include <intelli/data/string.h>
 #include <intelli/data/double.h>
