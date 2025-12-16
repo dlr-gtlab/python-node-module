@@ -387,7 +387,7 @@ GtpyPythonNode::deserializePythonData(int context)
         }
     }
 
-    GtpyContextManager::instance()->evalScript(context, "");
+    GtpyContextManager::instance()->evalScript(context, "", false);
 }
 
 void
