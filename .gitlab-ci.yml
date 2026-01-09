@@ -141,9 +141,9 @@ cppcheck:
 
 check-license:
    stage: codequality
-   needs: []
    extends:
      - .linuxdocker
+   needs: []
    before_script:
     - python3 -m pip install reuse
    script:
