@@ -37,15 +37,22 @@ add_gtlab_module(PythonNode SOURCES ${HEADERS} ${SOURCES} ${RESOURCES}
 target_link_libraries(PythonNode
     PUBLIC GTlab::IntelliGraph
     PRIVATE
-    Qt5::Widgets
-    Qt5::Gui
-    Qt5::Xml
-    Qt5::Svg
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::Xml
+    Qt${QT_VERSION_MAJOR}::Svg
     GTlab::Logging
     GTlab::Core
     GTlab::Gui
     GTlab::Python
 )
+
+# include SvgWidgets, if Qt major version is 6 or higher
+if (QT_VERSION_MAJOR GREATER_EQUAL 6)
+    target_link_libraries(PythonNode
+        PRIVATE Qt6::SvgWidgets
+    )
+endif()
 
 add_library(GTlab::PythonNode ALIAS PythonNode)
 

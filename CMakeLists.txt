@@ -19,17 +19,26 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(CMAKE_AUTOMOC ON)
 
-set(Qt5_DIR ${QT_DIR})
-
-find_package(Qt5 REQUIRED COMPONENTS Widgets Core Gui Xml Svg)
-
 find_package(Python3 REQUIRED COMPONENTS Development)
 set(Python3_VERSION_SUFFIX "${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}")
 
-include(GTlab)
+if (GTLAB_DEVTOOLS_DIR AND NOT GTlabDevtools_ROOT)
+    message(WARNING "GTLAB_DEVTOOLS_DIR is deprecated. Use GTlabDevtools_ROOT instead.")
+    set(GTlabDevtools_ROOT ${GTLAB_DEVTOOLS_DIR})
+endif()
 
+find_package(GTlabDevtools QUIET)
+
+include(GTlab)
 gtlab_standard_setup()
-enable_gtlab_devtools()
+
+require_qt(COMPONENTS Widgets Core Gui Xml Svg)
+
+# include SvgWidget, if Qt major version is 6 or higher
+if (QT_VERSION_MAJOR GREATER_EQUAL 6)
+    require_qt(COMPONENTS SvgWidgets)
+endif()
+
 
 if(NOT TARGET GTlab::Core)
     find_package(GTlab REQUIRED)
