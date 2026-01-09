@@ -93,8 +93,8 @@ testWin_2.0:
   
 testLinux_2.0:
   stage: test_2.0
-  tags: ["linux", "docker"]
-  image: at-twk-hal9000.intra.dlr.de:5000/dlr-at/gtlabdev-2_0-buster
+  extends:
+    - .linuxdocker
   needs: ["linuxBuildDebug_2.0"]
   before_script:
     # update to latest dev tools
@@ -115,10 +115,9 @@ testLinux_2.0:
 
 .code-coverage:
   stage: codequality
-  tags: ["linux", "docker"]
-  image: at-twk-hal9000.intra.dlr.de:5000/dlr-at/gtlabdev-2_0-buster
   extends: 
     - .build-linux_20
+    - .linuxdocker
   script:
     - apt install -y libglu1-mesa
     - cmake -B build -S . -G "Ninja" -DCMAKE_BUILD_TYPE=Debug -DGTLAB_DEVTOOLS_DIR=$GTLAB_DEV_TOOLS -DBUILD_UNITTESTS=ON -DBUILD_WITH_COVERAGE=ON
@@ -142,9 +141,9 @@ cppcheck:
 
 check-license:
    stage: codequality
-   tags: ["docker", "linux"]
    needs: []
-   image: at-twk-hal9000.intra.dlr.de:5000/dlr-at/buster-dev
+   extends:
+     - .linuxdocker
    before_script:
     - python3 -m pip install reuse
    script:
