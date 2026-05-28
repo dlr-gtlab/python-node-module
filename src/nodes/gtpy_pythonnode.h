@@ -17,9 +17,6 @@
 #include "gt_stringproperty.h"
 #include "gt_boolproperty.h"
 
-class QPlainTextEdit;
-class QSvgWidget;
-
 namespace gt
 {
 namespace nodes
@@ -106,6 +103,15 @@ public:
 
     void setScript(const QString& scr);
 
+    bool plotActive() const;
+
+    GtBoolProperty& plotActiveProperty();
+    const GtBoolProperty& plotActiveProperty() const;
+
+    void prepareScriptEditorContext(int context);
+
+    void syncPlotState(bool active);
+
     void addInputPort(const QString& className, const QString& caption);
 
     void addOutputPort(const QString& className, const QString& caption);
@@ -120,10 +126,6 @@ private:
     void deserializePythonData(int context);
 
     void serealizePythonData(int context);
-
-    void showCustomContextMenu(const QPoint& pos, QPlainTextEdit* textEdit);
-
-    void loadPlaceHolder(QSvgWidget* w);
 
 private slots:
     void appendErrorMessage(QString string, int i, QString prefix);
