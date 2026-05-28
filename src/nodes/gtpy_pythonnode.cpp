@@ -14,9 +14,7 @@
 
 #include "gtpy_contextmanager.h"
 #include "gtpy_tempdir.h"
-
-#include "gt_icons.h"
-#include "gt_sharedfunction.h"
+#include "../gui/gtpn_pythonnodewidget.h"
 
 #include <intelli/nodedata.h>
 #include <intelli/data/object.h>
@@ -25,17 +23,6 @@
 #include <intelli/data/bool.h>
 #include <intelli/data/int.h>
 #include <intelli/data/stringlist.h>
-
-#include "../gui/gtpn_pythonscriptdialog.h"
-#include "qsvgwidget.h"
-
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QSettings>
-#include <QPlainTextEdit>
-#include <QAction>
-#include <QMenu>
-#include <QDir>
 
 // This raw strings is used for the internal serialization and deserialization
 // of python classes
@@ -118,130 +105,7 @@ GtpyPythonNode::GtpyPythonNode() :
             SLOT(appendErrorMessage(QString,int,QString)));
 
     // registering the widget factory
-    registerWidgetFactory([=](intelli::Node& /*this*/){
-        auto w = std::make_unique<QWidget>();
-        auto l = new QVBoxLayout();
-        auto p = new QPushButton();
-
-        // the optional plot widget based on svg
-        auto plot = new QSvgWidget;
-        plot->setVisible(m_plot_active.get());
-        loadPlaceHolder(plot);
-        l->addWidget(plot);
-
-        // the button to open the script editor
-        p->setIcon(gt::gui::icon::python());
-        l->addWidget(p);
-        w->setLayout(l);
-        l->setContentsMargins(0, 0, 0, 0);
-
-        auto togglePlot  = [w_ = w.get(), plot, this]()
-        {
-            plot->setVisible(m_plot_active.get());
-
-            if (m_plot_active.get())
-            {
-                w_->resize(size());
-                this->triggerNodeEvaluation();
-            }
-            else
-            {
-                w_->resize(w_->minimumSize());
-            }
-
-            this->setNodeFlag(NodeFlag::Resizable, m_plot_active.get());
-            nodeChanged();
-        };
-
-        connect(&m_plot_active, &GtBoolProperty::changed, plot, togglePlot);
-
-        auto openEditor = [w_ = w.get(), this](){
-            GTPY_GIL_SCOPE
-
-            GtpnPythonScriptDialog dialog;
-
-            dialog.setScript(m_script);
-            /// try to add to context to have auto completion
-            deserializePythonData(dialog.context());
-
-            QSettings settings;
-
-            dialog.resize(settings.value("pythonNode/python_editor/size",
-                                         QSize(400, 300)).toSize());
-
-            if (gt::interface::getSharedFunction("Assistant", "prompt"))
-            {
-                gtInfo() << tr("GTlab Assistant found! installing filter...");
-
-                QList<QWidget *> children = dialog.findChildren<QWidget *>();
-                for (QWidget* child : qAsConst(children))
-                {
-                    if (QString(child->metaObject()->className()) == QStringLiteral("GtpyScriptView"))
-                    {
-                        if (auto* textEdit = qobject_cast<QPlainTextEdit*>(child))
-                        {
-                            // Set custom context menu policy
-                            textEdit->setContextMenuPolicy(Qt::CustomContextMenu);
-                            connect(textEdit, &QPlainTextEdit::customContextMenuRequested,
-                                    [textEdit, this](const QPoint &pos)
-                            {
-                                showCustomContextMenu(pos, textEdit);
-                            });
-                        }
-                    }
-                }
-            }
-
-            dialog.exec();
-
-            QString oldScript = m_script;
-            m_script = dialog.pythonScript();
-
-            if (oldScript != m_script)
-            {
-                gtTrace() << tr("Script changed");
-                emit triggerNodeEvaluation();
-            }
-
-            settings.setValue("pythonNode/python_editor/size", dialog.size());
-
-        };
-
-        connect(this, &GtpyPythonNode::onComputeChange, plot,
-                        [=, w_ = plot](const QString& tmpPath)
-        {
-            QDir tempDir(tmpPath);
-
-            QFile figure(tempDir.absoluteFilePath("figure_0.svg"));
-
-            if (figure.exists())
-            {
-                w_->load(tempDir.absoluteFilePath("figure_0.svg"));
-                figure.remove();
-            }
-            else
-            {
-                loadPlaceHolder(w_);
-            }
-        });
-
-        auto update = [=](int progress){
-            if (progress != 100)
-            {
-                p->setIcon(gt::gui::icon::processRunningIcon(progress));
-            }
-            else
-            {
-                p->setIcon(gt::gui::icon::python());
-            }
-        };
-
-        connect(this, &GtpyPythonNode::timePassed, w.get(), update);
-
-        connect(p, &QPushButton::clicked, w.get(), openEditor);
-
-        return w;
-    });
+    registerWidgetFactory(GtpyPythonNodeWidget::create);
 }
 
 QString
@@ -254,6 +118,37 @@ void
 GtpyPythonNode::setScript(const QString& scr)
 {
     m_script = scr;
+}
+
+bool
+GtpyPythonNode::plotActive() const
+{
+    return m_plot_active;
+}
+
+GtBoolProperty&
+GtpyPythonNode::plotActiveProperty()
+{
+    return m_plot_active;
+}
+
+const GtBoolProperty&
+GtpyPythonNode::plotActiveProperty() const
+{
+    return m_plot_active;
+}
+
+void
+GtpyPythonNode::prepareScriptEditorContext(int context)
+{
+    deserializePythonData(context);
+}
+
+void
+GtpyPythonNode::syncPlotState(bool active)
+{
+    setNodeFlag(NodeFlag::Resizable, active);
+    nodeChanged();
 }
 
 void
@@ -459,43 +354,6 @@ GtpyPythonNode::serealizePythonData(int context)
             }
         }
     }
-}
-
-void
-GtpyPythonNode::showCustomContextMenu(const QPoint& pos,
-                                      QPlainTextEdit* textEdit)
-{
-    QMenu* menu = textEdit->createStandardContextMenu();
-    QAction* customAction = new QAction("Assistant", textEdit);
-
-    QObject::connect(customAction, &QAction::triggered, textEdit, [&textEdit]()
-    {
-        auto function = gt::interface::getSharedFunction("Assistant",
-                                                         "open_prompt_python");
-
-        if (!function.isNull())
-        {
-            QTextCursor cursor = textEdit->textCursor();
-            QString selectedText = cursor.selectedText();
-            auto retVals = function({selectedText});
-
-            if (!retVals.isEmpty())
-            {
-                cursor.insertText(retVals[0].toString());
-            }
-        }
-    });
-
-    menu->addSeparator();
-    menu->addAction(customAction);
-    menu->exec(textEdit->mapToGlobal(pos));
-    delete menu;
-}
-
-void
-GtpyPythonNode::loadPlaceHolder(QSvgWidget* w)
-{
-    w->load(QStringLiteral(":/pyNodes/figure_empty.svg"));
 }
 
 void

@@ -16,12 +16,14 @@ set(HEADERS
     gtpn_module.h
     nodes/gtpy_pythonnode.h
     gui/gtpn_pythonscriptdialog.h
+    gui/gtpn_pythonnodewidget.h
 )
 
 set(SOURCES
     gtpn_module.cpp
     nodes/gtpy_pythonnode.cpp
     gui/gtpn_pythonscriptdialog.cpp
+    gui/gtpn_pythonnodewidget.cpp
 )
 
 set(RESOURCES
