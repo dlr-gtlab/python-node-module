@@ -14,9 +14,7 @@
 
 #include "gt_icons.h"
 #include "gt_sharedfunction.h"
-#include "gtpy_contextmanager.h"
 #include "gtpy_gilscope.h"
-#include "gtpy_tempdir.h"
 
 #include "qsvgwidget.h"
 
@@ -30,11 +28,13 @@
 #include <QSize>
 #include <QTextCursor>
 #include <QVBoxLayout>
+#include <QtGlobal>
 
 std::unique_ptr<QWidget>
 GtpyPythonNodeWidget::create(intelli::Node& node)
 {
     auto* pythonNode = qobject_cast<GtpyPythonNode*>(&node);
+    Q_ASSERT(pythonNode);
     if (!pythonNode)
     {
         return {};
