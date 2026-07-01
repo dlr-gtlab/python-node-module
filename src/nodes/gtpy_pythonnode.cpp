@@ -19,6 +19,7 @@
 #include "gt_sharedfunction.h"
 
 #include <intelli/nodedata.h>
+#include <intelli/graphuservariables.h>
 #include <intelli/data/object.h>
 #include <intelli/data/string.h>
 #include <intelli/data/double.h>
@@ -37,6 +38,9 @@
 #include <QMenu>
 #include <QDir>
 
+namespace
+{
+
 // This raw strings is used for the internal serialization and deserialization
 // of python classes
 const QString p_deser_script = R"(
@@ -53,6 +57,35 @@ import pickle
 __deserialized_data_tmp = pickle.dumps($$var_name$$)
 #gtError() << "Serialization Scipt execution finished"
 )";
+
+PyPPObject dictFromUserVars(const intelli::GraphUserVariables& vars)
+{
+    GTPY_GIL_SCOPE
+
+    auto dict = PyPPDict_New();
+
+    vars.visit([&dict](const QString& key, const QVariant& value){
+        PyPPDict_SetItem(dict, key.toStdString().c_str(),
+                         PyPPObject::fromQVariant(value));
+    });
+
+    return dict;
+}
+
+void userVarsToPython(int contextId, const intelli::GraphUserVariables* vars)
+{
+    if (!vars) return;
+
+    GTPY_GIL_SCOPE
+
+    auto contextPtr = GtpyContextManager::instance()->contextPointer(contextId);
+    if (contextPtr.isNull()) return;
+
+    auto module = PyPPObject::Borrow(contextPtr.object());
+    PyPPModule_AddObject(module, "user_vars", dictFromUserVars(*vars));
+}
+
+}
 
 void
 gt::nodes::python::deserializeToContext(int context,
@@ -159,10 +192,13 @@ GtpyPythonNode::GtpyPythonNode() :
             GTPY_GIL_SCOPE
 
             GtpnPythonScriptDialog dialog;
-
             dialog.setScript(m_script);
+
+            auto contextId = dialog.context();
+
             /// try to add to context to have auto completion
-            deserializePythonData(dialog.context());
+            deserializePythonData(contextId);
+            userVarsToPython(contextId, userVariables());
 
             QSettings settings;
 
@@ -283,6 +319,7 @@ GtpyPythonNode::eval()
     /// handle python input variables and add also rest of the input ports
     /// to context
     deserializePythonData(context);
+    userVarsToPython(context, userVariables());
 
     if (!GtpyContextManager::instance()->evalScript(context, script()))
     {
@@ -350,7 +387,7 @@ GtpyPythonNode::deserializePythonData(int context)
         }
     }
 
-    GtpyContextManager::instance()->evalScript(context, "");
+    GtpyContextManager::instance()->evalScript(context, "", false);
 }
 
 void

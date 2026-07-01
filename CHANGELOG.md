@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
  - Added support for python modules compiled with python versions other than 3.9
+ - Enable access to graph user variables via `user_vars` in Python Node scripts - #20
 
 ## [0.5.0] - 2025-07-13
 ### Added
