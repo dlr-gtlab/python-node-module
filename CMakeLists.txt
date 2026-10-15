@@ -29,7 +29,10 @@ endif()
 
 find_package(GTlabDevtools QUIET)
 
-include(GTlab)
+if(NOT TARGET GTlab::Core)
+    find_package(GTlab REQUIRED)
+endif()
+
 gtlab_standard_setup()
 
 require_qt(COMPONENTS Widgets Core Gui Xml Svg)
@@ -37,11 +40,6 @@ require_qt(COMPONENTS Widgets Core Gui Xml Svg)
 # include SvgWidget, if Qt major version is 6 or higher
 if (QT_VERSION_MAJOR GREATER_EQUAL 6)
     require_qt(COMPONENTS SvgWidgets)
-endif()
-
-
-if(NOT TARGET GTlab::Core)
-    find_package(GTlab REQUIRED)
 endif()
 
 if(NOT TARGET GTlab::IntelliGraph)
