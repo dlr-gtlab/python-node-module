@@ -124,22 +124,25 @@ gt::nodes::python::serializeFromContextToVariant(
 
 
 GtpyPythonNode::GtpyPythonNode() :
-    intelli::DynamicNode("Python Scripting Node",
-            {},  /// whitelist for inputs is empty: means everything is ok
-            /// outputlist is restricted to compatible node data classes
-            {GT_CLASSNAME(intelli::ByteArrayData),
-             GT_CLASSNAME(intelli::ObjectData),
-             GT_CLASSNAME(intelli::DoubleData),
-             GT_CLASSNAME(intelli::IntData),
-             GT_CLASSNAME(intelli::StringData),
-             GT_CLASSNAME(intelli::BoolData),
-             GT_CLASSNAME(intelli::StringListData)}
-             )
+    intelli::DynamicNode(
+        "Python Scripting Node",
+        {},  /// whitelist for inputs is empty: means everything is ok
+        /// outputlist is restricted to compatible node data classes
+        {
+            intelli::typeId<intelli::ByteArrayData>(),
+            intelli::typeId<intelli::ObjectData>(),
+            intelli::typeId<intelli::DoubleData>(),
+            intelli::typeId<intelli::IntData>(),
+            intelli::typeId<intelli::StringData>(),
+            intelli::typeId<intelli::BoolData>(),
+            intelli::typeId<intelli::StringListData>()
+        },
+        DynamicInputAndOutput)
 {
     setFlag(GtObject::UserRenamable);
 
     setNodeFlag(NodeFlag::Resizable);
-    setNodeEvalMode(intelli::NodeEvalMode::Exclusive);
+    setNodeEvalMode(intelli::NodeEvalMode::ExclusiveDetached);
 
     m_script.hide(true);
 
@@ -406,7 +409,7 @@ GtpyPythonNode::serealizePythonData(int context)
         gtDebug() << tr("extracting dynamic out data... ") << data_tmp.caption;
 
         /// check each outport for typeId which was used
-        if (data_tmp.typeId == GT_CLASSNAME(intelli::ByteArrayData))
+        if (data_tmp.typeId == intelli::typeId<intelli::ByteArrayData>())
         {
             QVariant var = gt::nodes::python::serializeFromContextToVariant(
                         context, data_tmp);
@@ -450,7 +453,7 @@ GtpyPythonNode::serealizePythonData(int context)
                 continue;
             }
 
-            if (data_tmp.typeId == GT_CLASSNAME(intelli::ObjectData))
+            if (data_tmp.typeId == intelli::typeId<intelli::ObjectData>())
             {
                 auto* obj = qvariant_cast<QObject *>(var);
                 if (auto* objFromPython = qobject_cast<GtObject*>(obj))
@@ -459,35 +462,35 @@ GtpyPythonNode::serealizePythonData(int context)
                                 std::make_shared<intelli::ObjectData>(objFromPython));
                 }
             }
-            else if (data_tmp.typeId == GT_CLASSNAME(intelli::StringData))
+            else if (data_tmp.typeId == intelli::typeId<intelli::StringData>())
             {
                 QString string = var.toString();
 
                 setNodeData(data_tmp.id(),
                             std::make_shared<intelli::StringData>(string));
             }
-            else if (data_tmp.typeId == GT_CLASSNAME(intelli::StringListData))
+            else if (data_tmp.typeId == intelli::typeId<intelli::StringListData>())
             {
                 QStringList string = var.toStringList();
 
                 setNodeData(data_tmp.id(),
                             std::make_shared<intelli::StringListData>(string));
             }
-            else if (data_tmp.typeId == GT_CLASSNAME(intelli::DoubleData))
+            else if (data_tmp.typeId == intelli::typeId<intelli::DoubleData>())
             {
                 double val = var.toDouble();
 
                 setNodeData(data_tmp.id(),
                             std::make_shared<intelli::DoubleData>(val));
             }
-            else if (data_tmp.typeId == GT_CLASSNAME(intelli::IntData))
+            else if (data_tmp.typeId == intelli::typeId<intelli::IntData>())
             {
                 int val = var.toInt();
 
                 setNodeData(data_tmp.id(),
                             std::make_shared<intelli::IntData>(val));
             }
-            else if (data_tmp.typeId == GT_CLASSNAME(intelli::BoolData))
+            else if (data_tmp.typeId == intelli::typeId<intelli::BoolData>())
             {
                 bool val = var.toBool();
 

@@ -34,7 +34,7 @@ void
 GtpnModule::init()
 {
     /// Nodes
-    intelli::NodeFactory::registerNode<GtpyPythonNode>("Scripting");
+    intelli::NodeFactory::instance().registerNode<GtpyPythonNode>("Scripting");
 }
 
 GtpnModule::MetaInformation
